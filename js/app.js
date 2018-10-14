@@ -23,7 +23,9 @@ gameOverDisplay.style.display='none'; // hide gameOver html
 
 let gameOverCount=0; // check to see if all cards are displayed
 let moveCounter=0; //store the move counter
-let starCounter=0;
+let starCounter=3;// initialise starcounter to 3 to increase all stars
+let startTime=0; // for storing the time game starts
+let endTime=0; // for storing the time it took to complete the game
 
 
 //store all the cards in the card array
@@ -46,38 +48,44 @@ function clear(){
 }
 
 // shuffle the cards and display the cards without their symbols
+var x;
 function displayDeck(){
     clear();
-    let x=shuffle(cardArray);
+    x=shuffle(cardArray);
     for (let i=0; i<x.length; i++){
         newDeck.appendChild(x[i]);
         x[i].addEventListener('click', showCard);
-        moveCounter=0;
-        starCounter=0;
-        gameOverCount=0;
-        updateStars(starCounter);
-        movesNumber(moveCounter);
     }
+    moveCounter=0;
+    starCounter=3;
+    gameOverCount=0;
+    cardCount=0;
+    startTime= performance.now();// time game started
+    updateStars(starCounter);
+    movesNumber(moveCounter);
 }
 
 var clickedElement; // stores clicked cards
+var clickable=true;// determine if the card can be clicked or not. false, if two cards are being matched
 
 // function to add class 'show' to clicked card class in order to display the symbol
 function showCard(){
-    clickedElement=this;
-    clickedElement.className= clickedElement.className+' show open';
-    clickedElement.removeEventListener('click', showCard);// disable click listener
+    // if the card can be clicked
+    if (clickable){
+        clickedElement=this;
+        clickedElement.className= clickedElement.className+' show open';
+        clickedElement.removeEventListener('click', showCard);// disable click listener
+          openCards(clickedElement);
+        }
+        else{
+          return;// exit the function if card should not be clicked
+            }
 
-    // display second card for 400 miliseconds before calling
-    if (cardCount==1){
-        setTimeout(function(){openCards(clickedElement);}, 100);
-    }
-    else{openCards(clickedElement);}
 }
 
 // Array to store open cards temporarily
-let openCardsArray=new Array(2);
-let cardCount=0;// count the number of open cards
+var openCardsArray=new Array(2);
+var cardCount;// count the number of open cards
 
 // function that checks if the open cards match
 function openCards(element){
@@ -87,6 +95,7 @@ function openCards(element){
     //compare both cards
     if(cardCount>1){
         // if cards match? change the css property and display
+        clickable=false;// prevent other cards from being clicked until matching is over
         if(openCards[0].innerHTML==openCards[1].innerHTML){
             openCards[0].className=openCards[0].className+' match';
             openCards[1].className=openCards[1].className+' match';
@@ -104,8 +113,12 @@ function openCards(element){
 
             if (gameOverCount== 8){
               // display game over page
+              endTime= performance.now();
               winPage();
+
             }
+            clickable=true;// allow cards to clicked
+
           }
 
           /* if the cards dont match change the css properties to hide their symbols
@@ -118,17 +131,21 @@ function openCards(element){
             openCards[0].addEventListener('click', showCard);
             openCards[1].addEventListener('click', showCard);
             moveCounter++;
-            starCheck();
+            starCheck();// update the stars on the html
             movesNumber(moveCounter);
             cardCount=0;
           }
+
       }
+
+
 }
 
 // function to increase the move counter
 function closeCard(){
   openCards[0].className='card';
   openCards[1].className='card';
+  clickable=true;
 }
 
   // update html to diplay the number of moves
@@ -163,7 +180,7 @@ function updateStars(starCounter){
 
 // function to set the number of stars
 function starCheck(){
-    if (gameOverCount==moveCounter){
+    if (moveCounter<=8){
         starCounter=3;
       }
     else if(moveCounter<=(2*gameOverCount)){
@@ -200,6 +217,8 @@ function winPage(){
     gameOverDisplay.style.display='flex';// display gameover html
     document.querySelector('.getMoves').innerText=moveCounter;// update score
     document.querySelector('.starCount').innerText=starCounter;// update score
+    const timer= (endTime-startTime)/1000; // calculate the time taken
+    document.querySelector('.getTime').innerText=parseInt(timer,10); //update the timer
 }
 
 let replay2= document.querySelector('.replay');
@@ -207,7 +226,6 @@ replay2.addEventListener('click',startAllOver);
 
 // function to display a reshuflled card deck and hide the gameOver html
 function startAllOver(){
-//bodyNode.style.background='#ffffff url("../img/geometry2.png")' ;
       ContainerElement.style.display="flex";
       gameOverDisplay.style.display='none';
       displayDeck();
