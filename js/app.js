@@ -24,10 +24,10 @@ gameOverDisplay.style.display='none'; // hide gameOver html
 let gameOverCount=0; // check to see if all cards are displayed
 let moveCounter=0; //store the move counter
 let starCounter=3;// initialise starcounter to 3 to increase all stars
-let startTime=0; // for storing the time game starts
-let endTime=0; // for storing the time it took to complete the game
+let gameTime=0; // for storing the number of seconds that has elapsed since the game started
+let checkTime=0; // use to storing the time during which the timer will be delayed
 
-
+update();
 //store all the cards in the card array
 for (let i=0; i<cardArray.length; i++){
     cardArray[i]=cards[i];
@@ -47,6 +47,32 @@ function clear(){
       }
 }
 
+// update the time on the webpage
+function updateTime(){
+  checkTime++;
+  if(checkTime<3){
+    gameTime=0;
+  }
+  else{
+    gameTime++;
+  }
+
+  document.querySelector('.timer').innerText=gameTime;
+
+}
+
+var timerInterval=null;// for storing the setInterval return value
+
+// function to run the updates on the web page
+function update(){
+
+  if(gameOverCount<8){
+    timerInterval=setInterval(updateTime,1000);
+  }
+
+}
+
+
 // shuffle the cards and display the cards without their symbols
 var x;
 function displayDeck(){
@@ -60,9 +86,11 @@ function displayDeck(){
     starCounter=3;
     gameOverCount=0;
     cardCount=0;
-    startTime= performance.now();// time game started
+    gameTime= 0;
+    checkTime=0;
     updateStars(starCounter);
     movesNumber(moveCounter);
+
 }
 
 var clickedElement; // stores clicked cards
@@ -158,23 +186,23 @@ function movesNumber(moveCounter){
 function updateStars(starCounter){
     if (starCounter==1){
       starlets[0].className='fa fa-star-o';
-      starlets[1].className='fa fa-star';
+      starlets[1].className='fa fa-star-o';
       starlets[2].className='fa fa-star';
     }
     else if (starCounter==2) {
       starlets[0].className='fa fa-star-o';
-      starlets[1].className='fa fa-star-o';
+      starlets[1].className='fa fa-star';
       starlets[2].className='fa fa-star';
     }
     else if (starCounter==3) {
-      starlets[0].className='fa fa-star-o';
-      starlets[1].className='fa fa-star-o';
-      starlets[2].className='fa fa-star-o';
-    }
-    else{
       starlets[0].className='fa fa-star';
       starlets[1].className='fa fa-star';
       starlets[2].className='fa fa-star';
+    }
+    else{
+      starlets[0].className='fa fa-star-o';
+      starlets[1].className='fa fa-star-o';
+      starlets[2].className='fa fa-star-o';
     }
 }
 
@@ -183,10 +211,10 @@ function starCheck(){
     if (moveCounter<=8){
         starCounter=3;
       }
-    else if(moveCounter<=(2*gameOverCount)){
+    else if((moveCounter-gameOverCount)<=10){
             starCounter=2;
           }
-    else if(moveCounter<=(3*gameOverCount)){
+    else if((moveCounter-gameOverCount)<=13){
           starCounter=1;
         }
     else{
@@ -217,8 +245,7 @@ function winPage(){
     gameOverDisplay.style.display='flex';// display gameover html
     document.querySelector('.getMoves').innerText=moveCounter;// update score
     document.querySelector('.starCount').innerText=starCounter;// update score
-    const timer= (endTime-startTime)/1000; // calculate the time taken
-    document.querySelector('.getTime').innerText=parseInt(timer,10); //update the timer
+    document.querySelector('.getTime').innerText=parseInt(gameTime,10); //update the timer
 }
 
 let replay2= document.querySelector('.replay');
